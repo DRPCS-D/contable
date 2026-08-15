@@ -125,7 +125,8 @@ export default function CargarFacturas() {
       const quedanPendientes = prev.some((i) => i.estado === 'error')
       if (!quedanPendientes) {
         toast.success('Facturas guardadas')
-        navigate(`/contribuyentes/${contribuyenteId}/facturas`)
+        // "facturas" es la pestana por defecto de la ficha del contribuyente
+        navigate(`/contribuyentes/${contribuyenteId}`)
       } else {
         toast.warning('Algunas facturas no se pudieron guardar. Revisalas abajo.')
       }

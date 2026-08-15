@@ -1,9 +1,10 @@
 import { ArrowLeft, Pencil, Receipt, Wallet } from 'lucide-react'
 import { useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { ContribuyenteFormModal } from '@/components/contribuyentes/ContribuyenteFormModal'
 import { PlanCuentasTab } from '@/components/contribuyentes/PlanCuentasTab'
+import { FacturasTab } from '@/components/facturas/FacturasTab'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Cargando, ErrorBox } from '@/components/ui/estado'
@@ -19,7 +20,6 @@ export default function ContribuyenteDetalle() {
   const { actualizar } = useContribuyentes()
   const [tab, setTab] = useState<Tab>('facturas')
   const [modalEdicion, setModalEdicion] = useState(false)
-  const navigate = useNavigate()
 
   async function alternarActivo() {
     if (!contribuyente) return
@@ -77,20 +77,7 @@ export default function ContribuyenteDetalle() {
         </TabButton>
       </div>
 
-      {tab === 'facturas' && (
-        <div className="rounded-lg border border-dashed border-border bg-card/50 p-8 text-center">
-          <p className="text-sm text-muted-foreground">
-            La carga y el listado de facturas se agregan en el proximo paso.
-          </p>
-          <Button
-            className="mt-4"
-            variant="outline"
-            onClick={() => navigate(`/contribuyentes/${contribuyente.id}/facturas`)}
-          >
-            Ir a facturas
-          </Button>
-        </div>
-      )}
+      {tab === 'facturas' && <FacturasTab contribuyenteId={contribuyente.id} />}
 
       {tab === 'plan-cuentas' && (
         <PlanCuentasTab contribuyenteId={contribuyente.id} empresaId={contribuyente.empresa_id} />

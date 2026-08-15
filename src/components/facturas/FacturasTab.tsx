@@ -1,6 +1,6 @@
-import { AlertTriangle, ArrowLeft, ChevronLeft, ChevronRight, Pencil, Plus, Receipt, Search, Trash2 } from 'lucide-react'
+import { AlertTriangle, ChevronLeft, ChevronRight, Pencil, Plus, Receipt, Search, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
 import { EditarFacturaModal } from '@/components/facturas/EditarFacturaModal'
 import { Badge } from '@/components/ui/badge'
@@ -8,15 +8,12 @@ import { Button } from '@/components/ui/button'
 import { Cargando, ErrorBox, Vacio } from '@/components/ui/estado'
 import { Input, Select } from '@/components/ui/field'
 import { ConfirmModal } from '@/components/ui/modal'
-import { useContribuyente } from '@/hooks/useContribuyentes'
 import { FILTROS_VACIOS, useFacturas, type FiltrosFacturas } from '@/hooks/useFacturas'
 import { usePlanCuentas } from '@/hooks/usePlanCuentas'
 import type { FacturaConRelaciones } from '@/lib/database.types'
 import { formatFecha, formatMontoConMoneda } from '@/lib/format'
 
-export default function FacturasListado() {
-  const { id: contribuyenteId } = useParams<{ id: string }>()
-  const { data: contribuyente, loading: cargandoContribuyente } = useContribuyente(contribuyenteId)
+export function FacturasTab({ contribuyenteId }: { contribuyenteId: string }) {
   const { data: planCuentas } = usePlanCuentas(contribuyenteId)
 
   const [filtros, setFiltros] = useState<FiltrosFacturas>(FILTROS_VACIOS)
@@ -50,25 +47,14 @@ export default function FacturasListado() {
   const hayFiltrosActivos =
     filtros.tipoOperacion || filtros.planCuentaId || filtros.desde || filtros.hasta || filtros.busqueda
 
-  if (cargandoContribuyente) return <Cargando />
-  if (!contribuyente) return <ErrorBox mensaje="No se encontro el contribuyente." />
-
   return (
     <div>
-      <Link
-        to={`/contribuyentes/${contribuyente.id}`}
-        className="mb-4 inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="size-3.5" /> {contribuyente.razon_social}
-      </Link>
-
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-lg font-semibold text-foreground">Facturas</h1>
-          <p className="text-sm text-muted-foreground">{total} en total</p>
-        </div>
-        <Link to={`/contribuyentes/${contribuyente.id}/facturas/cargar`}>
-          <Button>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <p className="text-xs text-muted-foreground">
+          {total} {total === 1 ? 'factura' : 'facturas'}
+        </p>
+        <Link to={`/contribuyentes/${contribuyenteId}/facturas/cargar`}>
+          <Button size="sm">
             <Plus /> Cargar facturas
           </Button>
         </Link>
@@ -147,7 +133,7 @@ export default function FacturasListado() {
           }
           accion={
             !hayFiltrosActivos && (
-              <Link to={`/contribuyentes/${contribuyente.id}/facturas/cargar`}>
+              <Link to={`/contribuyentes/${contribuyenteId}/facturas/cargar`}>
                 <Button>
                   <Plus /> Cargar facturas
                 </Button>

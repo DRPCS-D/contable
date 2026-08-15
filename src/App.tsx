@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import AppLayout from '@/components/layout/AppLayout'
 import SuperAdminLayout from '@/components/layout/SuperAdminLayout'
 import { Cargando } from '@/components/ui/estado'
@@ -12,7 +12,6 @@ import NoEncontrado from '@/pages/NoEncontrado'
 import Usuarios from '@/pages/Usuarios'
 import Empresas from '@/pages/admin/Empresas'
 import EmpresaDetalle from '@/pages/admin/EmpresaDetalle'
-import FacturasListado from '@/pages/facturas/Listado'
 
 // pdf.js agrega ~1MB al bundle: se separa en su propio chunk para no
 // penalizar el login ni el resto de la app, que no lo necesitan.
@@ -27,7 +26,8 @@ export default function App() {
         <Route index element={<Inicio />} />
         <Route path="contribuyentes" element={<Contribuyentes />} />
         <Route path="contribuyentes/:id" element={<ContribuyenteDetalle />} />
-        <Route path="contribuyentes/:id/facturas" element={<FacturasListado />} />
+        {/* El listado ahora vive como pestana dentro de la ficha del contribuyente */}
+        <Route path="contribuyentes/:id/facturas" element={<Navigate to=".." replace />} />
         <Route
           path="contribuyentes/:id/facturas/cargar"
           element={
