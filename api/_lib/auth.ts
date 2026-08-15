@@ -1,5 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
-import { error, type ApiRequest, type ApiResponse } from './http'
+import { error, type ApiRequest, type ApiResponse } from './http.js'
 
 export interface PerfilServidor {
   id: string

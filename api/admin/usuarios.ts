@@ -1,5 +1,5 @@
-import { clienteAdmin, exigeSuperAdmin } from '../_lib/auth'
-import { conManejoDeErrores, error, exigeMetodo, leerBody, type ApiHandler } from '../_lib/http'
+import { clienteAdmin, exigeSuperAdmin } from '../_lib/auth.js'
+import { conManejoDeErrores, error, exigeMetodo, leerBody, type ApiHandler } from '../_lib/http.js'
 
 /**
  * Operaciones de usuarios que NO se pueden hacer desde el navegador porque

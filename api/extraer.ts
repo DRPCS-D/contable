@@ -1,5 +1,5 @@
-import { clienteAdmin, exigeUsuario } from './_lib/auth'
-import { conManejoDeErrores, error, exigeMetodo, leerBody, type ApiHandler } from './_lib/http'
+import { clienteAdmin, exigeUsuario } from './_lib/auth.js'
+import { conManejoDeErrores, error, exigeMetodo, leerBody, type ApiHandler } from './_lib/http.js'
 
 /**
  * Extrae los datos de una factura paraguaya a partir de una imagen, usando
