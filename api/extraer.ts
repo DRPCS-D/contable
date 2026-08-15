@@ -1,5 +1,5 @@
 import { clienteAdmin, exigeUsuario } from './_lib/auth'
-import { error, exigeMetodo, leerBody, type ApiHandler } from './_lib/http'
+import { conManejoDeErrores, error, exigeMetodo, leerBody, type ApiHandler } from './_lib/http'
 
 /**
  * Extrae los datos de una factura paraguaya a partir de una imagen, usando
@@ -178,4 +178,4 @@ const handler: ApiHandler = async (req, res) => {
   }
 }
 
-export default handler
+export default conManejoDeErrores(handler)

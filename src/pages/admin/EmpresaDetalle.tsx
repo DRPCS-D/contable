@@ -284,16 +284,27 @@ function NuevoUsuarioModal({
     >
       <div className="space-y-4">
         <Field label="Nombre *">
-          <Input value={nombre} onChange={(e) => setNombre(e.target.value)} autoFocus />
+          <Input
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
+            autoComplete="off"
+            autoFocus
+          />
         </Field>
-        <Field label="Email *">
-          <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <Field label="Email *" hint="No repitas tu propio email: cada cuenta necesita uno distinto.">
+          <Input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="off"
+          />
         </Field>
         <Field label="Contrasena *" hint="Minimo 8 caracteres">
           <Input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            autoComplete="new-password"
           />
         </Field>
         <Field label="Rol">
