@@ -27,17 +27,11 @@ garantiza Row Level Security en Postgres. El unico que atraviesa empresas es el
 
 ### 1. Supabase
 
-Crear un proyecto y correr, en orden, en el **SQL Editor**:
-
-| Archivo | Que hace |
-|---|---|
-| `supabase/migrations/001_schema.sql` | Tablas, indices y triggers |
-| `supabase/migrations/002_rls.sql` | Aislamiento por empresa |
-| `supabase/migrations/003_storage.sql` | Bucket privado `facturas` |
-
-Despues, crear el usuario super admin en **Authentication → Users → Add user**
-(marcando *Auto Confirm User*), y recien ahi correr `004_super_admin.sql`
-cambiando el email por el que se uso.
+Crear un proyecto y correr, en orden, todo `supabase/migrations/*.sql` en el
+**SQL Editor**. `004_super_admin.sql` es la unica que no se corre de una: hay
+que crear antes el usuario super admin en **Authentication → Users → Add user**
+(marcando *Auto Confirm User*) y recien ahi correrla, cambiando el email por
+el que se uso.
 
 ### 2. Variables de entorno
 
@@ -62,6 +56,24 @@ Vercel autodetecta Vite. Hay que cargar las cinco variables de entorno en
 
 El `vercel.json` reescribe todo hacia `index.html` **menos** `/api/*`, para que
 recargar con F5 en una ruta profunda no de 404 y las funciones sigan andando.
+
+## PWA y versionado
+
+La app es instalable (manifest + service worker) y cachea de forma segura:
+los assets de Vite (`/assets/*`) llevan hash de contenido y se sirven
+cache-first; todo lo demas (HTML, `/api/*`, Supabase) es siempre red primero,
+para que los datos contables nunca queden desactualizados.
+
+El nombre del cache del service worker incluye la version de `package.json`,
+asi que **hacer una release es un solo paso**: subir el campo `"version"` de
+`package.json` (o `npm version patch`) y desplegar. El build (`vite.config.ts`,
+plugin `swVersionado`) genera `dist/sw.js` con esa version ya inyectada — no
+hay dos archivos que mantener sincronizados a mano.
+
+Los iconos (`public/icons/`, `public/favicon*`, `public/logo.svg`) se generan
+con `node scripts/generate-icons.mjs` (necesita `npm install --no-save sharp`
+antes de correrlo). Si se cambia el logo, se edita el SVG dentro de ese script
+y se vuelve a correr.
 
 ## Notas
 

@@ -1,4 +1,4 @@
-import { Loader2, Lock } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
@@ -6,6 +6,7 @@ import { ErrorBox } from '@/components/ui/estado'
 import { Field, Input } from '@/components/ui/field'
 import { useAuth } from '@/hooks/useAuth'
 import { isSupabaseConfigured } from '@/lib/supabase'
+import { APP_VERSION } from '@/lib/version'
 
 export default function Login() {
   const { user, loading, signIn } = useAuth()
@@ -35,9 +36,7 @@ export default function Login() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
       <div className="w-full max-w-sm">
         <div className="mb-7 text-center">
-          <div className="mx-auto mb-3 flex size-11 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <Lock className="size-5" />
-          </div>
+          <img src="/logo.svg" alt="" className="mx-auto mb-3 size-12" />
           <h1 className="text-lg font-semibold text-foreground">Sistema Contable</h1>
           <p className="mt-1 text-sm text-muted-foreground">Ingresa con tu cuenta del estudio</p>
         </div>
@@ -91,6 +90,7 @@ export default function Login() {
         <p className="mt-4 text-center text-xs text-muted-foreground">
           Las cuentas las crea el administrador del sistema.
         </p>
+        <p className="mt-2 text-center text-[11px] text-muted-foreground/70">v{APP_VERSION}</p>
       </div>
     </div>
   )

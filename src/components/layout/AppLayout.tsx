@@ -1,4 +1,4 @@
-import { Building2, LogOut, ShieldCheck } from 'lucide-react'
+import { LogOut, ShieldCheck } from 'lucide-react'
 import { useEffect } from 'react'
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
@@ -56,9 +56,7 @@ export default function AppLayout() {
       <header className="sticky top-0 z-40 border-b border-border bg-card/85 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4 sm:px-6">
           <Link to="/" className="flex min-w-0 items-center gap-2">
-            <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
-              <Building2 className="size-4" />
-            </span>
+            <img src="/logo.svg" alt="" className="size-7 shrink-0 rounded-md" />
             <span className="truncate text-sm font-semibold text-foreground">
               {empresa?.nombre ?? (esSuperAdmin ? 'Administracion' : 'Sistema Contable')}
             </span>
