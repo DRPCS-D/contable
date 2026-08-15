@@ -1,14 +1,14 @@
-import { ArrowLeft, KeyRound, Plus, Trash2, UserRound } from 'lucide-react'
+import { ArrowLeft, KeyRound, Pencil, Plus, Trash2, UserRound } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Cargando, ErrorBox, Vacio } from '@/components/ui/estado'
-import { Field, Input, Select } from '@/components/ui/field'
+import { Field, Input, Select, Textarea } from '@/components/ui/field'
 import { ConfirmModal, Modal } from '@/components/ui/modal'
 import { useEmpresas } from '@/hooks/useEmpresas'
 import { useUsuarios } from '@/hooks/useUsuarios'
-import type { Empresa, Usuario } from '@/lib/database.types'
+import type { Empresa, EmpresaUpdate, Usuario } from '@/lib/database.types'
 import { formatFecha, formatRuc } from '@/lib/format'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
@@ -33,6 +33,7 @@ export default function EmpresaDetalle() {
   const [modalUsuario, setModalUsuario] = useState(false)
   const [modalPassword, setModalPassword] = useState<Usuario | null>(null)
   const [modalEliminar, setModalEliminar] = useState<Usuario | null>(null)
+  const [modalEditarEmpresa, setModalEditarEmpresa] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -89,9 +90,14 @@ export default function EmpresaDetalle() {
             RUC {formatRuc(empresa.ruc)} · Creado {formatFecha(empresa.created_at)}
           </p>
         </div>
-        <Button variant="outline" onClick={alternarActivoEmpresa}>
-          {empresa.activo ? 'Desactivar estudio' : 'Activar estudio'}
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setModalEditarEmpresa(true)}>
+            <Pencil /> Editar
+          </Button>
+          <Button variant="outline" onClick={alternarActivoEmpresa}>
+            {empresa.activo ? 'Desactivar estudio' : 'Activar estudio'}
+          </Button>
+        </div>
       </div>
 
       <div className="mb-4 flex items-center justify-between">
@@ -172,6 +178,17 @@ export default function EmpresaDetalle() {
         </div>
       )}
 
+      <EditarEmpresaModal
+        abierto={modalEditarEmpresa}
+        empresa={empresa}
+        onCerrar={() => setModalEditarEmpresa(false)}
+        onGuardado={(cambios) => {
+          setEmpresa({ ...empresa, ...cambios })
+          setModalEditarEmpresa(false)
+        }}
+        actualizar={actualizarEmpresa}
+      />
+
       <NuevoUsuarioModal
         abierto={modalUsuario}
         empresaId={empresa.id}
@@ -211,6 +228,101 @@ export default function EmpresaDetalle() {
         }}
       />
     </div>
+  )
+}
+
+function EditarEmpresaModal({
+  abierto,
+  empresa,
+  onCerrar,
+  onGuardado,
+  actualizar,
+}: {
+  abierto: boolean
+  empresa: Empresa
+  onCerrar: () => void
+  onGuardado: (cambios: EmpresaUpdate) => void
+  actualizar: ReturnType<typeof useEmpresas>['actualizar']
+}) {
+  const [nombre, setNombre] = useState('')
+  const [ruc, setRuc] = useState('')
+  const [email, setEmail] = useState('')
+  const [telefono, setTelefono] = useState('')
+  const [direccion, setDireccion] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [guardando, setGuardando] = useState(false)
+
+  useEffect(() => {
+    if (!abierto) return
+    setNombre(empresa.nombre)
+    setRuc(empresa.ruc ?? '')
+    setEmail(empresa.email ?? '')
+    setTelefono(empresa.telefono ?? '')
+    setDireccion(empresa.direccion ?? '')
+    setError(null)
+  }, [abierto, empresa])
+
+  async function onGuardar() {
+    if (!nombre.trim()) {
+      setError('El nombre del estudio es obligatorio.')
+      return
+    }
+    setGuardando(true)
+    setError(null)
+    const cambios: EmpresaUpdate = {
+      nombre: nombre.trim(),
+      ruc: ruc.trim() || null,
+      email: email.trim() || null,
+      telefono: telefono.trim() || null,
+      direccion: direccion.trim() || null,
+    }
+    const { error: err } = await actualizar(empresa.id, cambios)
+    setGuardando(false)
+    if (err) {
+      setError(err)
+      return
+    }
+    toast.success('Estudio actualizado')
+    onGuardado(cambios)
+  }
+
+  return (
+    <Modal
+      abierto={abierto}
+      titulo="Editar estudio"
+      onCerrar={onCerrar}
+      footer={
+        <>
+          <Button variant="outline" onClick={onCerrar} disabled={guardando}>
+            Cancelar
+          </Button>
+          <Button onClick={onGuardar} disabled={guardando}>
+            {guardando ? 'Guardando…' : 'Guardar'}
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <Field label="Nombre del estudio *">
+          <Input value={nombre} onChange={(e) => setNombre(e.target.value)} autoFocus />
+        </Field>
+        <Field label="RUC">
+          <Input value={ruc} onChange={(e) => setRuc(e.target.value)} placeholder="80012345-6" />
+        </Field>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Email">
+            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          </Field>
+          <Field label="Telefono">
+            <Input value={telefono} onChange={(e) => setTelefono(e.target.value)} />
+          </Field>
+        </div>
+        <Field label="Direccion">
+          <Textarea value={direccion} onChange={(e) => setDireccion(e.target.value)} rows={2} />
+        </Field>
+        {error && <ErrorBox mensaje={error} />}
+      </div>
+    </Modal>
   )
 }
 
