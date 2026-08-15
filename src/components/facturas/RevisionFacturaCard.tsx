@@ -2,6 +2,7 @@ import { AlertTriangle, RotateCcw, Trash2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Field, Input, Select, Textarea } from '@/components/ui/field'
+import { MontoInput } from '@/components/ui/monto-input'
 import type { PlanCuenta } from '@/lib/database.types'
 import { MONEDAS } from '@/lib/database.types'
 import type { FacturaFormState } from '@/lib/extraccion'
@@ -184,39 +185,61 @@ export function RevisionFacturaCard({
                 </Field>
                 {form.moneda !== 'PYG' && (
                   <Field label="Tipo de cambio">
-                    <Input value={form.tipo_cambio} onChange={(e) => campo('tipo_cambio', e.target.value)} />
+                    <MontoInput
+                      value={form.tipo_cambio}
+                      onChange={(v) => campo('tipo_cambio', v)}
+                      moneda={form.moneda}
+                    />
                   </Field>
                 )}
                 <Field label="Exentas">
-                  <Input value={form.exentas} onChange={(e) => campo('exentas', e.target.value)} className="tabular" />
+                  <MontoInput
+                    value={form.exentas}
+                    onChange={(v) => campo('exentas', v)}
+                    moneda={form.moneda}
+                    className="tabular"
+                  />
                 </Field>
                 <Field label="Gravadas 5%">
-                  <Input
+                  <MontoInput
                     value={form.gravado_5}
-                    onChange={(e) => campo('gravado_5', e.target.value)}
+                    onChange={(v) => campo('gravado_5', v)}
+                    moneda={form.moneda}
                     className="tabular"
                   />
                 </Field>
                 <Field label="IVA 5%">
-                  <Input value={form.iva_5} onChange={(e) => campo('iva_5', e.target.value)} className="tabular" />
+                  <MontoInput
+                    value={form.iva_5}
+                    onChange={(v) => campo('iva_5', v)}
+                    moneda={form.moneda}
+                    className="tabular"
+                  />
                 </Field>
                 <Field label="Gravadas 10%">
-                  <Input
+                  <MontoInput
                     value={form.gravado_10}
-                    onChange={(e) => campo('gravado_10', e.target.value)}
+                    onChange={(v) => campo('gravado_10', v)}
+                    moneda={form.moneda}
                     className="tabular"
                   />
                 </Field>
                 <Field label="IVA 10%">
-                  <Input value={form.iva_10} onChange={(e) => campo('iva_10', e.target.value)} className="tabular" />
+                  <MontoInput
+                    value={form.iva_10}
+                    onChange={(v) => campo('iva_10', v)}
+                    moneda={form.moneda}
+                    className="tabular"
+                  />
                 </Field>
                 <Field
                   label="Total"
                   warning={totalNoCierra ? `No coincide con exentas + gravadas (₲ ${totalEsperado})` : undefined}
                 >
-                  <Input
+                  <MontoInput
                     value={form.total}
-                    onChange={(e) => campo('total', e.target.value)}
+                    onChange={(v) => campo('total', v)}
+                    moneda={form.moneda}
                     className="tabular font-medium"
                   />
                 </Field>
