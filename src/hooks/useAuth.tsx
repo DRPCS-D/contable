@@ -93,9 +93,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let vivo = true
+    // Compara el usuario, no el nombre del evento: supabase-js revalida la
+    // sesion cada vez que la pestana recupera el foco, y segun la version
+    // eso puede disparar 'SIGNED_IN' (no solo 'TOKEN_REFRESHED') aunque sea
+    // el mismo usuario de siempre. Si a eso se le hace setLoading(true), el
+    // AppLayout desmonta el Outlet y se pierde cualquier formulario a medio
+    // llenar. Reaccionar solo a un cambio real de usuario evita el problema
+    // sin depender de que lista de eventos haya que ignorar.
+    const usuarioIdAnterior = { current: undefined as string | undefined }
 
     supabase.auth.getSession().then(async ({ data }) => {
       if (!vivo) return
+      usuarioIdAnterior.current = data.session?.user?.id
       setSession(data.session)
       await cargarPerfil(data.session?.user?.id)
       if (vivo) setLoading(false)
@@ -103,15 +112,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (evento, nuevaSesion) => {
+    } = supabase.auth.onAuthStateChange(async (_evento, nuevaSesion) => {
       if (!vivo) return
       setSession(nuevaSesion)
 
-      // El refresco de token no cambia quien sos: no hace falta recargar el perfil
-      if (evento === 'TOKEN_REFRESHED' || evento === 'USER_UPDATED') return
+      const idNuevo = nuevaSesion?.user?.id
+      if (idNuevo === usuarioIdAnterior.current) return
+      usuarioIdAnterior.current = idNuevo
 
       setLoading(true)
-      await cargarPerfil(nuevaSesion?.user?.id)
+      await cargarPerfil(idNuevo)
       if (vivo) setLoading(false)
     })
 
