@@ -2,7 +2,6 @@ import type {
   InputHTMLAttributes,
   LabelHTMLAttributes,
   ReactNode,
-  Ref,
   SelectHTMLAttributes,
   TextareaHTMLAttributes,
 } from 'react'
@@ -20,12 +19,8 @@ export function Label({ className, ...props }: LabelHTMLAttributes<HTMLLabelElem
   )
 }
 
-export function Input({
-  className,
-  ref,
-  ...props
-}: InputHTMLAttributes<HTMLInputElement> & { ref?: Ref<HTMLInputElement> }) {
-  return <input ref={ref} className={cn(control, 'h-9.5', className)} {...props} />
+export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
+  return <input className={cn(control, 'h-9.5', className)} {...props} />
 }
 
 export function Textarea({ className, ...props }: TextareaHTMLAttributes<HTMLTextAreaElement>) {

@@ -19,40 +19,6 @@ export function formatMontoConMoneda(valor: number | null | undefined, moneda = 
   return `${moneda === 'PYG' ? '₲' : moneda} ${formatMonto(valor, moneda)}`
 }
 
-/**
- * Formatea un monto MIENTRAS se edita: separa en digitos + como mucho una
- * marca decimal, descarta el resto de caracteres, y devuelve el texto ya
- * con puntos de miles. Pensado para usarse en cada tecla, no solo al perder
- * el foco.
- *
- * Solo la coma cuenta como marca decimal (es-PY: coma decimal, punto de
- * miles). El punto NUNCA se toma como decimal aca a proposito: como el
- * propio formateo ya inserta puntos de miles en cada tecla, si tambien se
- * aceptara '.' como marca decimal, el separador que la funcion puso en la
- * vuelta anterior se confundiria con una coma decimal tecleada por el
- * usuario y se perderia un digito.
- */
-export function formatearMontoEnVivo(crudo: string, moneda = 'PYG'): string {
-  const decimales = decimalesDe(moneda)
-  let vistoMarcaDecimal = false
-  let parteEntera = ''
-  let parteDecimal = ''
-
-  for (const ch of crudo) {
-    if (ch >= '0' && ch <= '9') {
-      if (vistoMarcaDecimal) parteDecimal += ch
-      else parteEntera += ch
-    } else if (ch === ',' && decimales > 0 && !vistoMarcaDecimal) {
-      vistoMarcaDecimal = true
-    }
-  }
-  parteDecimal = parteDecimal.slice(0, decimales)
-
-  const enteroFormateado = parteEntera ? new Intl.NumberFormat('es-PY').format(BigInt(parteEntera)) : ''
-  if (!vistoMarcaDecimal) return enteroFormateado
-  return `${enteroFormateado || '0'},${parteDecimal}`
-}
-
 /** '2026-03-14' → '14/03/2026'. Recorta la hora si viene un timestamp. */
 export function formatFecha(iso: string | null | undefined): string {
   if (!iso) return '—'
