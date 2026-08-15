@@ -30,12 +30,18 @@ export default function AppLayout() {
       <div className="flex min-h-screen items-center justify-center px-4">
         <div className="max-w-md rounded-lg border border-border bg-card p-6 text-center shadow-xs">
           <h1 className="text-sm font-semibold text-foreground">
-            {problemaPerfil === 'inactivo' ? 'Cuenta desactivada' : 'Cuenta sin configurar'}
+            {problemaPerfil === 'inactivo'
+              ? 'Cuenta desactivada'
+              : problemaPerfil === 'empresa-inactiva'
+                ? 'Estudio desactivado'
+                : 'Cuenta sin configurar'}
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
             {problemaPerfil === 'inactivo'
               ? 'Tu usuario fue desactivado. Contactate con el administrador del sistema.'
-              : 'Tu usuario existe pero todavia no esta asignado a ningun estudio. Contactate con el administrador del sistema.'}
+              : problemaPerfil === 'empresa-inactiva'
+                ? 'El estudio al que pertenecés fue desactivado. Contactate con el administrador del sistema.'
+                : 'Tu usuario existe pero todavia no esta asignado a ningun estudio. Contactate con el administrador del sistema.'}
           </p>
           <Button variant="outline" className="mt-5" onClick={signOut}>
             <LogOut /> Cerrar sesion

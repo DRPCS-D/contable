@@ -21,11 +21,14 @@ interface AuthState {
   loading: boolean
   esSuperAdmin: boolean
   /**
-   * Hay sesion valida pero la fila de `usuarios` no existe o esta inactiva.
-   * Pasa cuando se creo el usuario en el dashboard de Supabase y nadie
-   * corrio el alta correspondiente. Sin esto, la pantalla queda en blanco.
+   * Hay sesion valida pero algo impide usar la app:
+   * - 'sin-perfil': la fila de `usuarios` no existe (se creo en el
+   *   dashboard de Supabase y nadie corrio el alta correspondiente).
+   * - 'inactivo': el usuario esta desactivado.
+   * - 'empresa-inactiva': el usuario esta activo pero su estudio no.
+   * Sin esto, la pantalla queda en blanco en vez de explicar por que.
    */
-  problemaPerfil: 'sin-perfil' | 'inactivo' | null
+  problemaPerfil: 'sin-perfil' | 'inactivo' | 'empresa-inactiva' | null
   signIn: (email: string, password: string) => Promise<{ error: string | null }>
   signOut: () => Promise<void>
   refrescarPerfil: () => Promise<void>
@@ -85,7 +88,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .select('*')
         .eq('id', usuario.empresa_id)
         .maybeSingle()
-      if (token === cargaActual.current) setEmpresa((emp as Empresa) ?? null)
+      if (token !== cargaActual.current) return
+
+      // La RLS de `empresas` esconde la fila si el estudio esta inactivo
+      // (mi_empresa_id() no lo reconoce mientras dure eso): que la fila no
+      // aparezca es la senal de que esta desactivado, no un error random.
+      if (!emp) {
+        setEmpresa(null)
+        setProblemaPerfil('empresa-inactiva')
+        return
+      }
+      setEmpresa(emp as Empresa)
     } else {
       setEmpresa(null)
     }
