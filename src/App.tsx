@@ -5,6 +5,7 @@ import SuperAdminLayout from '@/components/layout/SuperAdminLayout'
 import { Cargando } from '@/components/ui/estado'
 import Contribuyentes from '@/pages/Contribuyentes'
 import ContribuyenteDetalle from '@/pages/ContribuyenteDetalle'
+import Empresa from '@/pages/Empresa'
 import Inicio from '@/pages/Inicio'
 import Login from '@/pages/Login'
 import NoEncontrado from '@/pages/NoEncontrado'
@@ -36,6 +37,7 @@ export default function App() {
           }
         />
         <Route path="usuarios" element={<Usuarios />} />
+        <Route path="empresa" element={<Empresa />} />
       </Route>
 
       <Route path="/admindrpcs" element={<SuperAdminLayout />}>
