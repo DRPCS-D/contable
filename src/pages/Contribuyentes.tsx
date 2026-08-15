@@ -1,7 +1,6 @@
 import { Plus, Search, Users } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { toast } from 'sonner'
+import { useNavigate } from 'react-router-dom'
 import { ContribuyenteFormModal } from '@/components/contribuyentes/ContribuyenteFormModal'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -13,7 +12,8 @@ import { formatRuc, normalizar } from '@/lib/format'
 type FiltroEstado = 'todos' | 'activos' | 'inactivos'
 
 export default function Contribuyentes() {
-  const { data, loading, error, refetch, actualizar } = useContribuyentes()
+  const { data, loading, error, refetch } = useContribuyentes()
+  const navigate = useNavigate()
   const [busqueda, setBusqueda] = useState('')
   const [filtroEstado, setFiltroEstado] = useState<FiltroEstado>('activos')
   const [modalAbierto, setModalAbierto] = useState(false)
@@ -100,11 +100,13 @@ export default function Contribuyentes() {
             </thead>
             <tbody>
               {filtrados.map((c) => (
-                <tr key={c.id} className="border-b border-border last:border-0 hover:bg-accent/40">
+                <tr
+                  key={c.id}
+                  onClick={() => navigate(`/contribuyentes/${c.id}`)}
+                  className="cursor-pointer border-b border-border last:border-0 hover:bg-accent/40"
+                >
                   <td className="px-4 py-2.5">
-                    <Link to={`/contribuyentes/${c.id}`} className="font-medium text-foreground hover:underline">
-                      {c.razon_social}
-                    </Link>
+                    <p className="font-medium text-foreground">{c.razon_social}</p>
                     {c.nombre_fantasia && (
                       <p className="text-xs text-muted-foreground">{c.nombre_fantasia}</p>
                     )}
@@ -113,20 +115,9 @@ export default function Contribuyentes() {
                   <td className="px-4 py-2.5 text-muted-foreground">{c.regimen || '—'}</td>
                   <td className="px-4 py-2.5 text-muted-foreground">{c.ciudad || '—'}</td>
                   <td className="px-4 py-2.5">
-                    <button
-                      onClick={async () => {
-                        const { error: err } = await actualizar(c.id, { activo: !c.activo })
-                        if (err) toast.error(err)
-                        else {
-                          toast.success(c.activo ? 'Contribuyente desactivado' : 'Contribuyente activado')
-                          refetch()
-                        }
-                      }}
-                    >
-                      <Badge tono={c.activo ? 'success' : 'neutral'}>
-                        {c.activo ? 'Activo' : 'Inactivo'}
-                      </Badge>
-                    </button>
+                    <Badge tono={c.activo ? 'success' : 'neutral'}>
+                      {c.activo ? 'Activo' : 'Inactivo'}
+                    </Badge>
                   </td>
                 </tr>
               ))}

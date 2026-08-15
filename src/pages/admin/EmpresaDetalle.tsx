@@ -13,6 +13,12 @@ import { formatFecha, formatRuc } from '@/lib/format'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 
+const ROL_LABEL: Record<Usuario['rol'], string> = {
+  super_admin: 'Super admin',
+  admin: 'Admin',
+  usuario: 'Usuario',
+}
+
 export default function EmpresaDetalle() {
   const { id } = useParams<{ id: string }>()
   const { actualizar: actualizarEmpresa } = useEmpresas()
@@ -32,6 +38,7 @@ export default function EmpresaDetalle() {
   const [cargandoEmpresa, setCargandoEmpresa] = useState(true)
 
   const [modalUsuario, setModalUsuario] = useState(false)
+  const [modalDetalleUsuario, setModalDetalleUsuario] = useState<Usuario | null>(null)
   const [modalEditarUsuario, setModalEditarUsuario] = useState<Usuario | null>(null)
   const [modalPassword, setModalPassword] = useState<Usuario | null>(null)
   const [modalEliminar, setModalEliminar] = useState<Usuario | null>(null)
@@ -128,58 +135,20 @@ export default function EmpresaDetalle() {
                 <th className="px-4 py-2.5 font-medium">Email</th>
                 <th className="px-4 py-2.5 font-medium">Rol</th>
                 <th className="px-4 py-2.5 font-medium">Estado</th>
-                <th className="px-4 py-2.5" />
               </tr>
             </thead>
             <tbody>
               {usuarios.map((u) => (
-                <tr key={u.id} className="border-b border-border last:border-0 hover:bg-accent/40">
+                <tr
+                  key={u.id}
+                  onClick={() => setModalDetalleUsuario(u)}
+                  className="cursor-pointer border-b border-border last:border-0 hover:bg-accent/40"
+                >
                   <td className="px-4 py-2.5 font-medium text-foreground">{u.nombre}</td>
                   <td className="px-4 py-2.5 text-muted-foreground">{u.email}</td>
-                  <td className="px-4 py-2.5 capitalize text-muted-foreground">{u.rol}</td>
+                  <td className="px-4 py-2.5 text-muted-foreground">{ROL_LABEL[u.rol]}</td>
                   <td className="px-4 py-2.5">
-                    <button
-                      onClick={async () => {
-                        const { error } = await setActivo(u.id, !u.activo)
-                        if (error) toast.error('No se pudo actualizar.')
-                        else {
-                          toast.success(u.activo ? 'Usuario desactivado' : 'Usuario activado')
-                          refetchUsuarios()
-                        }
-                      }}
-                    >
-                      <Badge tono={u.activo ? 'success' : 'neutral'}>
-                        {u.activo ? 'Activo' : 'Inactivo'}
-                      </Badge>
-                    </button>
-                  </td>
-                  <td className="px-4 py-2.5">
-                    <div className="flex justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        title="Editar"
-                        onClick={() => setModalEditarUsuario(u)}
-                      >
-                        <Pencil className="size-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        title="Cambiar contrasena"
-                        onClick={() => setModalPassword(u)}
-                      >
-                        <KeyRound className="size-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        title="Eliminar"
-                        onClick={() => setModalEliminar(u)}
-                      >
-                        <Trash2 className="size-4 text-destructive" />
-                      </Button>
-                    </div>
+                    <Badge tono={u.activo ? 'success' : 'neutral'}>{u.activo ? 'Activo' : 'Inactivo'}</Badge>
                   </td>
                 </tr>
               ))}
@@ -208,6 +177,34 @@ export default function EmpresaDetalle() {
           refetchUsuarios()
         }}
         crear={crear}
+      />
+
+      <UsuarioDetalleModal
+        usuario={modalDetalleUsuario}
+        onCerrar={() => setModalDetalleUsuario(null)}
+        onEditar={() => {
+          setModalEditarUsuario(modalDetalleUsuario)
+          setModalDetalleUsuario(null)
+        }}
+        onCambiarPassword={() => {
+          setModalPassword(modalDetalleUsuario)
+          setModalDetalleUsuario(null)
+        }}
+        onEliminar={() => {
+          setModalEliminar(modalDetalleUsuario)
+          setModalDetalleUsuario(null)
+        }}
+        onToggleActivo={async () => {
+          if (!modalDetalleUsuario) return
+          const { error } = await setActivo(modalDetalleUsuario.id, !modalDetalleUsuario.activo)
+          if (error) {
+            toast.error('No se pudo actualizar.')
+            return
+          }
+          toast.success(modalDetalleUsuario.activo ? 'Usuario desactivado' : 'Usuario activado')
+          setModalDetalleUsuario({ ...modalDetalleUsuario, activo: !modalDetalleUsuario.activo })
+          refetchUsuarios()
+        }}
       />
 
       <EditarUsuarioModal
@@ -446,6 +443,75 @@ function NuevoUsuarioModal({
           </Select>
         </Field>
         {error && <ErrorBox mensaje={error} />}
+      </div>
+    </Modal>
+  )
+}
+
+function UsuarioDetalleModal({
+  usuario,
+  onCerrar,
+  onEditar,
+  onCambiarPassword,
+  onEliminar,
+  onToggleActivo,
+}: {
+  usuario: Usuario | null
+  onCerrar: () => void
+  onEditar: () => void
+  onCambiarPassword: () => void
+  onEliminar: () => void
+  onToggleActivo: () => void
+}) {
+  if (!usuario) return null
+
+  return (
+    <Modal
+      abierto={usuario !== null}
+      titulo="Detalle de usuario"
+      onCerrar={onCerrar}
+      ancho="max-w-md"
+      footer={
+        <>
+          <Button variant="outline" onClick={onEliminar}>
+            <Trash2 className="text-destructive" /> Eliminar
+          </Button>
+          <Button variant="outline" onClick={onCambiarPassword}>
+            <KeyRound /> Contrasena
+          </Button>
+          <Button onClick={onEditar}>
+            <Pencil /> Editar
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2 className="text-base font-semibold text-foreground">{usuario.nombre}</h2>
+            <p className="text-sm text-muted-foreground">{usuario.email}</p>
+          </div>
+          <button onClick={onToggleActivo}>
+            <Badge tono={usuario.activo ? 'success' : 'neutral'}>
+              {usuario.activo ? 'Activo' : 'Inactivo'}
+            </Badge>
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <p className="text-xs text-muted-foreground">Rol</p>
+            <p className="text-foreground">{ROL_LABEL[usuario.rol]}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Alta</p>
+            <p className="text-foreground">{formatFecha(usuario.created_at)}</p>
+          </div>
+        </div>
+
+        <p className="text-xs text-muted-foreground">
+          Tocá el estado para {usuario.activo ? 'desactivarlo' : 'activarlo'}.
+        </p>
       </div>
     </Modal>
   )

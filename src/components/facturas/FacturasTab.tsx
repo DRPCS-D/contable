@@ -1,8 +1,9 @@
-import { AlertTriangle, ChevronLeft, ChevronRight, Pencil, Plus, Receipt, Search, Trash2 } from 'lucide-react'
+import { AlertTriangle, ChevronLeft, ChevronRight, Plus, Receipt, Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
 import { EditarFacturaModal } from '@/components/facturas/EditarFacturaModal'
+import { FacturaDetalleModal } from '@/components/facturas/FacturaDetalleModal'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Cargando, ErrorBox, Vacio } from '@/components/ui/estado'
@@ -35,6 +36,7 @@ export function FacturasTab({ contribuyenteId }: { contribuyenteId: string }) {
     pagina,
   )
 
+  const [modalDetalle, setModalDetalle] = useState<FacturaConRelaciones | null>(null)
   const [modalEditar, setModalEditar] = useState<FacturaConRelaciones | null>(null)
   const [modalEliminar, setModalEliminar] = useState<FacturaConRelaciones | null>(null)
   const [eliminando, setEliminando] = useState(false)
@@ -153,7 +155,6 @@ export function FacturasTab({ contribuyenteId }: { contribuyenteId: string }) {
                   <th className="px-4 py-2.5 font-medium">Proveedor / Cliente</th>
                   <th className="px-4 py-2.5 font-medium">Categoria</th>
                   <th className="px-4 py-2.5 text-right font-medium">Total</th>
-                  <th className="px-4 py-2.5" />
                 </tr>
               </thead>
               <tbody>
@@ -161,7 +162,11 @@ export function FacturasTab({ contribuyenteId }: { contribuyenteId: string }) {
                   const totalCalc = f.exentas + f.gravado_5 + f.gravado_10
                   const noCierra = Math.abs(totalCalc - f.total) > 1
                   return (
-                    <tr key={f.id} className="border-b border-border last:border-0 hover:bg-accent/40">
+                    <tr
+                      key={f.id}
+                      onClick={() => setModalDetalle(f)}
+                      className="cursor-pointer border-b border-border last:border-0 hover:bg-accent/40"
+                    >
                       <td className="px-4 py-2.5 text-muted-foreground">{formatFecha(f.fecha_factura)}</td>
                       <td className="px-4 py-2.5 tabular text-foreground">{f.numero_factura || '—'}</td>
                       <td className="px-4 py-2.5">
@@ -185,16 +190,6 @@ export function FacturasTab({ contribuyenteId }: { contribuyenteId: string }) {
                             aria-label="El total no coincide con exentas + gravadas"
                           />
                         )}
-                      </td>
-                      <td className="px-4 py-2.5">
-                        <div className="flex justify-end gap-1">
-                          <Button variant="ghost" size="icon" onClick={() => setModalEditar(f)}>
-                            <Pencil className="size-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" onClick={() => setModalEliminar(f)}>
-                            <Trash2 className="size-4 text-destructive" />
-                          </Button>
-                        </div>
                       </td>
                     </tr>
                   )
@@ -228,6 +223,19 @@ export function FacturasTab({ contribuyenteId }: { contribuyenteId: string }) {
           )}
         </>
       )}
+
+      <FacturaDetalleModal
+        factura={modalDetalle}
+        onCerrar={() => setModalDetalle(null)}
+        onEditar={() => {
+          setModalEditar(modalDetalle)
+          setModalDetalle(null)
+        }}
+        onEliminar={() => {
+          setModalEliminar(modalDetalle)
+          setModalDetalle(null)
+        }}
+      />
 
       <EditarFacturaModal
         factura={modalEditar}

@@ -126,16 +126,17 @@ export function PlanCuentasTab({
             </thead>
             <tbody>
               {data.map((c) => (
-                <tr key={c.id} className="border-b border-border last:border-0 hover:bg-accent/40">
+                <tr
+                  key={c.id}
+                  onClick={() => setModalCuenta(c)}
+                  className="cursor-pointer border-b border-border last:border-0 hover:bg-accent/40"
+                >
                   <td className="px-4 py-2.5 tabular font-medium text-foreground">{c.codigo}</td>
-                  <td className="px-4 py-2.5 text-foreground">
-                    <button className="text-left hover:underline" onClick={() => setModalCuenta(c)}>
-                      {c.descripcion}
-                    </button>
-                  </td>
+                  <td className="px-4 py-2.5 text-foreground">{c.descripcion}</td>
                   <td className="px-4 py-2.5">
                     <button
-                      onClick={async () => {
+                      onClick={async (e) => {
+                        e.stopPropagation()
                         const { error: err } = await actualizar(c.id, { activo: !c.activo })
                         if (err) toast.error(err)
                         else refetch()
@@ -148,7 +149,14 @@ export function PlanCuentasTab({
                   </td>
                   <td className="px-4 py-2.5">
                     <div className="flex justify-end">
-                      <Button variant="ghost" size="icon" onClick={() => setModalEliminar(c)}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setModalEliminar(c)
+                        }}
+                      >
                         <Trash2 className="size-4 text-destructive" />
                       </Button>
                     </div>

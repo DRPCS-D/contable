@@ -1,6 +1,6 @@
 import { Building2, Plus, Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Cargando, ErrorBox, Vacio } from '@/components/ui/estado'
@@ -22,6 +22,7 @@ const EMPRESA_VACIA: EmpresaInsert = {
 
 export default function Empresas() {
   const { data: empresas, loading, error, refetch, crear } = useEmpresas()
+  const navigate = useNavigate()
   const [busqueda, setBusqueda] = useState('')
   const [modalAbierto, setModalAbierto] = useState(false)
   const [form, setForm] = useState<EmpresaInsert>(EMPRESA_VACIA)
@@ -120,12 +121,12 @@ export default function Empresas() {
             </thead>
             <tbody>
               {filtradas.map((e) => (
-                <tr key={e.id} className="border-b border-border last:border-0 hover:bg-accent/40">
-                  <td className="px-4 py-2.5">
-                    <Link to={`/admindrpcs/${e.id}`} className="font-medium text-foreground hover:underline">
-                      {e.nombre}
-                    </Link>
-                  </td>
+                <tr
+                  key={e.id}
+                  onClick={() => navigate(`/admindrpcs/${e.id}`)}
+                  className="cursor-pointer border-b border-border last:border-0 hover:bg-accent/40"
+                >
+                  <td className="px-4 py-2.5 font-medium text-foreground">{e.nombre}</td>
                   <td className="px-4 py-2.5 tabular text-muted-foreground">{formatRuc(e.ruc)}</td>
                   <td className="px-4 py-2.5 text-muted-foreground">{e.email || '—'}</td>
                   <td className="px-4 py-2.5">
