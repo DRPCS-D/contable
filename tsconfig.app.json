@@ -16,8 +16,7 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
-    /* Alias @/ -> src/ */
-    "baseUrl": ".",
+    /* Alias @/ -> src/ (sin baseUrl: quedo deprecado en TS 6) */
     "paths": {
       "@/*": ["./src/*"]
     },
