@@ -22,6 +22,7 @@ export default function EmpresaDetalle() {
     error: errorUsuarios,
     refetch: refetchUsuarios,
     crear,
+    editar,
     eliminar,
     cambiarPassword,
     setActivo,
@@ -31,6 +32,7 @@ export default function EmpresaDetalle() {
   const [cargandoEmpresa, setCargandoEmpresa] = useState(true)
 
   const [modalUsuario, setModalUsuario] = useState(false)
+  const [modalEditarUsuario, setModalEditarUsuario] = useState<Usuario | null>(null)
   const [modalPassword, setModalPassword] = useState<Usuario | null>(null)
   const [modalEliminar, setModalEliminar] = useState<Usuario | null>(null)
   const [modalEditarEmpresa, setModalEditarEmpresa] = useState(false)
@@ -156,6 +158,14 @@ export default function EmpresaDetalle() {
                       <Button
                         variant="ghost"
                         size="icon"
+                        title="Editar"
+                        onClick={() => setModalEditarUsuario(u)}
+                      >
+                        <Pencil className="size-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         title="Cambiar contrasena"
                         onClick={() => setModalPassword(u)}
                       >
@@ -198,6 +208,16 @@ export default function EmpresaDetalle() {
           refetchUsuarios()
         }}
         crear={crear}
+      />
+
+      <EditarUsuarioModal
+        usuario={modalEditarUsuario}
+        onCerrar={() => setModalEditarUsuario(null)}
+        onGuardado={() => {
+          setModalEditarUsuario(null)
+          refetchUsuarios()
+        }}
+        editar={editar}
       />
 
       <CambiarPasswordModal
@@ -418,6 +438,88 @@ function NuevoUsuarioModal({
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="new-password"
           />
+        </Field>
+        <Field label="Rol">
+          <Select value={rol} onChange={(e) => setRol(e.target.value as 'admin' | 'usuario')}>
+            <option value="usuario">Usuario</option>
+            <option value="admin">Admin</option>
+          </Select>
+        </Field>
+        {error && <ErrorBox mensaje={error} />}
+      </div>
+    </Modal>
+  )
+}
+
+function EditarUsuarioModal({
+  usuario,
+  onCerrar,
+  onGuardado,
+  editar,
+}: {
+  usuario: Usuario | null
+  onCerrar: () => void
+  onGuardado: () => void
+  editar: ReturnType<typeof useUsuarios>['editar']
+}) {
+  const [nombre, setNombre] = useState('')
+  const [email, setEmail] = useState('')
+  const [rol, setRol] = useState<'admin' | 'usuario'>('usuario')
+  const [error, setError] = useState<string | null>(null)
+  const [guardando, setGuardando] = useState(false)
+
+  useEffect(() => {
+    if (!usuario) return
+    setNombre(usuario.nombre)
+    setEmail(usuario.email)
+    setRol(usuario.rol === 'admin' ? 'admin' : 'usuario')
+    setError(null)
+  }, [usuario])
+
+  async function onGuardar() {
+    if (!usuario) return
+    if (!nombre.trim() || !email.trim()) {
+      setError('Completa todos los campos.')
+      return
+    }
+    setGuardando(true)
+    setError(null)
+    const { error: err } = await editar({
+      id: usuario.id,
+      nombre: nombre.trim(),
+      email: email.trim(),
+      rol,
+    })
+    setGuardando(false)
+    if (err) setError(err)
+    else {
+      toast.success('Usuario actualizado')
+      onGuardado()
+    }
+  }
+
+  return (
+    <Modal
+      abierto={usuario !== null}
+      titulo={`Editar usuario — ${usuario?.nombre ?? ''}`}
+      onCerrar={onCerrar}
+      footer={
+        <>
+          <Button variant="outline" onClick={onCerrar} disabled={guardando}>
+            Cancelar
+          </Button>
+          <Button onClick={onGuardar} disabled={guardando}>
+            {guardando ? 'Guardando…' : 'Guardar'}
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <Field label="Nombre *">
+          <Input value={nombre} onChange={(e) => setNombre(e.target.value)} autoFocus />
+        </Field>
+        <Field label="Email *" hint="Es el email con el que inicia sesion: cambiarlo cambia su login.">
+          <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         </Field>
         <Field label="Rol">
           <Select value={rol} onChange={(e) => setRol(e.target.value as 'admin' | 'usuario')}>

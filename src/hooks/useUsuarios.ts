@@ -48,6 +48,15 @@ export function useUsuarios(empresaId?: string) {
     }
   }
 
+  async function editar(payload: { id: string; nombre: string; email: string; rol: 'admin' | 'usuario' }) {
+    try {
+      await apiFetch('/api/admin/usuarios', { accion: 'editar', ...payload })
+      return { error: null }
+    } catch (e) {
+      return { error: e instanceof Error ? e.message : 'Error al guardar el usuario.' }
+    }
+  }
+
   async function eliminar(id: string) {
     try {
       await apiFetch('/api/admin/usuarios', { accion: 'eliminar', id })
@@ -72,5 +81,5 @@ export function useUsuarios(empresaId?: string) {
     return { error: error?.message ?? null }
   }
 
-  return { ...estado, refetch, crear, eliminar, cambiarPassword, setActivo }
+  return { ...estado, refetch, crear, editar, eliminar, cambiarPassword, setActivo }
 }
