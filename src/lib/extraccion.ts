@@ -1,4 +1,4 @@
-import type { FacturaDetalleInsert, FacturaInsert, TipoOperacion } from './database.types'
+import type { Factura, FacturaDetalleInsert, FacturaInsert, FacturaUpdate, TipoOperacion } from './database.types'
 import { formatFecha, parseFecha, parseMonto } from './format'
 
 /** Espejo del json_schema de api/extraer.ts. */
@@ -175,4 +175,63 @@ export function formStateADetalles(form: FacturaFormState): Omit<FacturaDetalleI
 /** total = exentas + gravado_5 + gravado_10, para avisar si no cierra. */
 export function totalCalculado(form: FacturaFormState): number {
   return parseMonto(form.exentas) + parseMonto(form.gravado_5) + parseMonto(form.gravado_10)
+}
+
+/** Factura ya guardada -> estado editable del formulario. Sin detalles: no se editan desde el listado. */
+export function facturaAFormState(f: Factura): FacturaFormState {
+  return {
+    tipo_operacion: f.tipo_operacion,
+    numero_factura: s(f.numero_factura),
+    fecha_factura: f.fecha_factura ?? '',
+    timbrado: s(f.timbrado),
+    timbrado_vencimiento: f.timbrado_vencimiento ?? '',
+    condicion_venta: f.condicion_venta ?? '',
+    proveedor_nombre: s(f.proveedor_nombre),
+    proveedor_ruc: s(f.proveedor_ruc),
+    proveedor_direccion: s(f.proveedor_direccion),
+    cliente_nombre: s(f.cliente_nombre),
+    cliente_ruc: s(f.cliente_ruc),
+    cliente_direccion: s(f.cliente_direccion),
+    moneda: f.moneda || 'PYG',
+    tipo_cambio: n(f.tipo_cambio),
+    exentas: n(f.exentas),
+    gravado_5: n(f.gravado_5),
+    iva_5: n(f.iva_5),
+    gravado_10: n(f.gravado_10),
+    iva_10: n(f.iva_10),
+    total: n(f.total),
+    forma_pago: s(f.forma_pago),
+    observaciones: s(f.observaciones),
+    plan_cuenta_id: f.plan_cuenta_id ?? '',
+    detalles: [],
+  }
+}
+
+/** Cambios editables desde el listado: no toca archivo, extraccion_raw ni created_by. */
+export function formStateAFacturaUpdate(form: FacturaFormState): FacturaUpdate {
+  return {
+    plan_cuenta_id: form.plan_cuenta_id || null,
+    tipo_operacion: form.tipo_operacion,
+    numero_factura: form.numero_factura.trim() || null,
+    fecha_factura: form.fecha_factura || null,
+    timbrado: form.timbrado.trim() || null,
+    timbrado_vencimiento: form.timbrado_vencimiento || null,
+    condicion_venta: form.condicion_venta || null,
+    proveedor_nombre: form.proveedor_nombre.trim() || null,
+    proveedor_ruc: form.proveedor_ruc.trim() || null,
+    proveedor_direccion: form.proveedor_direccion.trim() || null,
+    cliente_nombre: form.cliente_nombre.trim() || null,
+    cliente_ruc: form.cliente_ruc.trim() || null,
+    cliente_direccion: form.cliente_direccion.trim() || null,
+    moneda: form.moneda.trim() || 'PYG',
+    tipo_cambio: form.tipo_cambio.trim() ? parseMonto(form.tipo_cambio) : null,
+    exentas: parseMonto(form.exentas),
+    gravado_5: parseMonto(form.gravado_5),
+    gravado_10: parseMonto(form.gravado_10),
+    iva_5: parseMonto(form.iva_5),
+    iva_10: parseMonto(form.iva_10),
+    total: parseMonto(form.total),
+    forma_pago: form.forma_pago.trim() || null,
+    observaciones: form.observaciones.trim() || null,
+  }
 }
