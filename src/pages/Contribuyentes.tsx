@@ -1,6 +1,7 @@
 import { Plus, Search, Users } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { toast } from 'sonner'
 import { ContribuyenteFormModal } from '@/components/contribuyentes/ContribuyenteFormModal'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -12,7 +13,7 @@ import { formatRuc, normalizar } from '@/lib/format'
 type FiltroEstado = 'todos' | 'activos' | 'inactivos'
 
 export default function Contribuyentes() {
-  const { data, loading, error, refetch } = useContribuyentes()
+  const { data, loading, error, refetch, actualizar } = useContribuyentes()
   const [busqueda, setBusqueda] = useState('')
   const [filtroEstado, setFiltroEstado] = useState<FiltroEstado>('activos')
   const [modalAbierto, setModalAbierto] = useState(false)
@@ -112,9 +113,20 @@ export default function Contribuyentes() {
                   <td className="px-4 py-2.5 text-muted-foreground">{c.regimen || '—'}</td>
                   <td className="px-4 py-2.5 text-muted-foreground">{c.ciudad || '—'}</td>
                   <td className="px-4 py-2.5">
-                    <Badge tono={c.activo ? 'success' : 'neutral'}>
-                      {c.activo ? 'Activo' : 'Inactivo'}
-                    </Badge>
+                    <button
+                      onClick={async () => {
+                        const { error: err } = await actualizar(c.id, { activo: !c.activo })
+                        if (err) toast.error(err)
+                        else {
+                          toast.success(c.activo ? 'Contribuyente desactivado' : 'Contribuyente activado')
+                          refetch()
+                        }
+                      }}
+                    >
+                      <Badge tono={c.activo ? 'success' : 'neutral'}>
+                        {c.activo ? 'Activo' : 'Inactivo'}
+                      </Badge>
+                    </button>
                   </td>
                 </tr>
               ))}

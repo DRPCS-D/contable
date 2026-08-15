@@ -1,12 +1,13 @@
 import { ArrowLeft, Pencil, Receipt, Wallet } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { toast } from 'sonner'
 import { ContribuyenteFormModal } from '@/components/contribuyentes/ContribuyenteFormModal'
 import { PlanCuentasTab } from '@/components/contribuyentes/PlanCuentasTab'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Cargando, ErrorBox } from '@/components/ui/estado'
-import { useContribuyente } from '@/hooks/useContribuyentes'
+import { useContribuyente, useContribuyentes } from '@/hooks/useContribuyentes'
 import { formatRuc } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
@@ -15,9 +16,21 @@ type Tab = 'facturas' | 'plan-cuentas'
 export default function ContribuyenteDetalle() {
   const { id } = useParams<{ id: string }>()
   const { data: contribuyente, loading, refetch } = useContribuyente(id)
+  const { actualizar } = useContribuyentes()
   const [tab, setTab] = useState<Tab>('facturas')
   const [modalEdicion, setModalEdicion] = useState(false)
   const navigate = useNavigate()
+
+  async function alternarActivo() {
+    if (!contribuyente) return
+    const { error: err } = await actualizar(contribuyente.id, { activo: !contribuyente.activo })
+    if (err) {
+      toast.error(err)
+      return
+    }
+    toast.success(contribuyente.activo ? 'Contribuyente desactivado' : 'Contribuyente activado')
+    refetch()
+  }
 
   if (loading) return <Cargando />
   if (!contribuyente) return <ErrorBox mensaje="No se encontro el contribuyente." />
@@ -45,9 +58,14 @@ export default function ContribuyenteDetalle() {
             {contribuyente.ciudad && ` · ${contribuyente.ciudad}`}
           </p>
         </div>
-        <Button variant="outline" onClick={() => setModalEdicion(true)}>
-          <Pencil /> Editar
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setModalEdicion(true)}>
+            <Pencil /> Editar
+          </Button>
+          <Button variant="outline" onClick={alternarActivo}>
+            {contribuyente.activo ? 'Desactivar' : 'Activar'}
+          </Button>
+        </div>
       </div>
 
       <div className="mb-5 flex gap-1 border-b border-border">
